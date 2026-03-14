@@ -13,6 +13,7 @@ import type {
   PlanRequest,
   TimelineEntry,
 } from "@/lib/schema/planRequest";
+import type { LiftMetric } from "@/lib/resorts/liftMetrics";
 import {
   buildLiftLookup,
   getOrDefaultMetric,
@@ -66,11 +67,13 @@ function diffMinutes(start: string, end: string): number {
  * @param req              Validated plan request.
  * @param realDriveMinutes Real one-way drive time from Google Maps (overrides fallback).
  * @param liftStatusMap    Live lift status from liftie.info (null = treat all as "unknown").
+ * @param dbLiftMetrics    Lift metrics from Supabase (overrides hardcoded LIFT_METRICS).
  */
 export function buildMockPlan(
   req: PlanRequest,
   realDriveMinutes?: number,
-  liftStatusMap?: LiftStatusMap | null
+  liftStatusMap?: LiftStatusMap | null,
+  dbLiftMetrics?: LiftMetric[]
 ): DayPlan {
   const resortKey = req.resort === "best-available" ? "deer-valley" : req.resort;
   const resortName = RESORT_NAMES[req.resort] ?? RESORT_NAMES["deer-valley"];
@@ -97,9 +100,13 @@ export function buildMockPlan(
 
   // ---- Build candidate lift list ----
   // Source: liftStatusMap from Liftie (real lift names + status) when available,
-  // otherwise fall back to the static LIFT_METRICS list.
+  // otherwise fall back to DB metrics (or static LIFT_METRICS as final fallback).
 
-  const lookup = buildLiftLookup(resortKey);
+  // Build lookup from DB metrics if provided, otherwise from the static config.
+  const metricsForLookup = dbLiftMetrics ?? LIFT_METRICS[resortKey] ?? [];
+  const lookup = dbLiftMetrics
+    ? new Map(metricsForLookup.map((m) => [m.liftName.toLowerCase(), m]))
+    : buildLiftLookup(resortKey);
 
   interface Candidate {
     liftName: string;
@@ -130,8 +137,8 @@ export function buildMockPlan(
       );
     }
   } else {
-    // Fallback path: no live data, use static config with "unknown" status.
-    const metrics = LIFT_METRICS[resortKey] ?? LIFT_METRICS["deer-valley"];
+    // Fallback path: no live data — use DB metrics if provided, otherwise static config.
+    const metrics = dbLiftMetrics ?? LIFT_METRICS[resortKey] ?? LIFT_METRICS["deer-valley"];
     candidates = metrics.map((m) => ({ ...m, status: "unknown" as LiftStatus }));
   }
 

@@ -4,10 +4,10 @@ import { PlanRequestSchema } from "@/lib/schema/planRequest";
 import { buildMockPlan } from "@/lib/optimization/mockOptimizer";
 import { getDriveMinutes } from "@/lib/maps/driveTime";
 import { RESORT_ADDRESSES } from "@/lib/resorts/resortAddresses";
-import { RESORT_COORDINATES } from "@/lib/resorts/resortCoordinates";
 import { fetchHourlyWeather, getWeatherForTime } from "@/lib/weather/googleWeather";
 import { fetchLiftStatus } from "@/lib/resorts/liftStatus";
 import { LIFTIE_RESORT_IDS } from "@/lib/resorts/liftieIds";
+import { fetchResortCoords, fetchLiftMetrics } from "@/lib/supabase/resorts";
 import type {
   OptimizeResponse,
   OptimizeErrorResponse,
@@ -54,22 +54,24 @@ export async function POST(
     planRequest.resort === "best-available" ? "deer-valley" : planRequest.resort;
   const destination = RESORT_ADDRESSES[resortKey];
 
-  // Fan out network calls in parallel — drive time, lift status, weather.
+  // Fan out network calls in parallel — drive time, lift status, resort data from Supabase.
   const liftieId = LIFTIE_RESORT_IDS[resortKey] ?? null;
 
-  const [realDriveMinutes, liftStatusMap] = await Promise.all([
+  const [realDriveMinutes, liftStatusMap, coords, dbLiftMetrics] = await Promise.all([
     destination ? getDriveMinutes(planRequest.startingLocation, destination) : Promise.resolve(null),
     liftieId ? fetchLiftStatus(liftieId) : Promise.resolve(null),
+    fetchResortCoords(resortKey),
+    fetchLiftMetrics(resortKey),
   ]);
 
   const plan = buildMockPlan(
     planRequest,
     realDriveMinutes ?? undefined,
-    liftStatusMap
+    liftStatusMap,
+    dbLiftMetrics
   );
 
   // Attach hourly weather to each timeline entry.
-  const coords = RESORT_COORDINATES[resortKey];
   if (coords) {
     const weatherByHour = await fetchHourlyWeather(coords.lat, coords.lng);
     if (weatherByHour) {

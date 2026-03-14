@@ -35,6 +35,9 @@ export default function Home() {
           <Button asChild size="sm" variant="ghost" className="text-white hover:text-white hover:bg-white/10">
             <Link href="/chat">Chat</Link>
           </Button>
+          <Button asChild size="sm" variant="ghost" className="text-white hover:text-white hover:bg-white/10">
+            <Link href="/waitlist">What&apos;s next</Link>
+          </Button>
           <Button asChild size="sm">
             <Link href="/plan">Plan my day</Link>
           </Button>
