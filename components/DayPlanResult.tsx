@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Car,
   MountainSnow,
@@ -10,6 +11,8 @@ import {
   Thermometer,
   Wind,
   CloudSnow,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import type { DayPlan, LiftStatus, TimelineEntry, WeatherSlice } from "@/lib/schema/planRequest";
 import { cn } from "@/lib/utils";
@@ -153,6 +156,27 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
 }
 
 export function DayPlanResult({ plan }: { plan: DayPlan }) {
+  const [showRuns, setShowRuns] = useState(false);
+
+  // Split timeline into three segments: pre-mountain, on-mountain, post-mountain.
+  const firstMountainIdx = plan.timeline.findIndex(
+    (e) => e.type === "lift" || e.type === "run"
+  );
+  const lastMountainIdx = [...plan.timeline]
+    .map((e, i) => ({ e, i }))
+    .filter(({ e }) => e.type === "lift" || e.type === "run")
+    .at(-1)?.i ?? -1;
+
+  const preMountain =
+    firstMountainIdx === -1 ? plan.timeline : plan.timeline.slice(0, firstMountainIdx);
+  const onMountain =
+    firstMountainIdx === -1 ? [] : plan.timeline.slice(firstMountainIdx, lastMountainIdx + 1);
+  const postMountain =
+    lastMountainIdx === -1 ? [] : plan.timeline.slice(lastMountainIdx + 1);
+
+  const mountainStart = onMountain[0]?.startTime;
+  const mountainEnd = onMountain.at(-1)?.endTime;
+
   return (
     <div className="space-y-6">
       {/* Data sources banner */}
@@ -202,9 +226,55 @@ export function DayPlanResult({ plan }: { plan: DayPlan }) {
         <div className="px-4 py-3 bg-muted/40">
           <h3 className="font-medium text-sm">Timeline</h3>
         </div>
+
         <div className="px-4">
-          {plan.timeline.map((entry, i) => (
+          {/* Drive out + park buffer — always visible */}
+          {preMountain.map((entry, i) => (
             <TimelineRow key={i} entry={entry} />
+          ))}
+
+          {/* On-mountain block — collapsible */}
+          {onMountain.length > 0 && (
+            <>
+              <button
+                onClick={() => setShowRuns((v) => !v)}
+                className="w-full flex items-center justify-between gap-4 py-3 border-b border-border text-left hover:bg-muted/30 transition-colors"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Icon column — matches TimelineRow layout */}
+                  <div className="w-8 flex justify-center shrink-0">
+                    <MountainSnow className="h-5 w-5 text-sky-500" />
+                  </div>
+                  <div className="w-20 shrink-0 text-xs text-muted-foreground">
+                    {mountainStart}–{mountainEnd}
+                  </div>
+                  <div>
+                    <span className="font-medium text-sm">
+                      {plan.totalRuns} run{plan.totalRuns !== 1 ? "s" : ""}
+                    </span>
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {plan.totalVerticalFt.toLocaleString()} ft vert · {plan.skiTimeMinutes} min
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground pr-1 shrink-0">
+                  {showRuns ? (
+                    <><ChevronUp className="h-4 w-4" /> Hide</>
+                  ) : (
+                    <><ChevronDown className="h-4 w-4" /> Details</>
+                  )}
+                </div>
+              </button>
+
+              {showRuns && onMountain.map((entry, i) => (
+                <TimelineRow key={i} entry={entry} />
+              ))}
+            </>
+          )}
+
+          {/* Gear down + drive home — always visible */}
+          {postMountain.map((entry, i) => (
+            <TimelineRow key={`post-${i}`} entry={entry} />
           ))}
         </div>
       </div>

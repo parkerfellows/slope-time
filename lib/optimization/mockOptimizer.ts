@@ -39,6 +39,18 @@ const FALLBACK_DRIVE_MINUTES: Record<string, number> = {
   "best-available": 45,
 };
 
+/**
+ * First lift opening time (HH:MM) per resort.
+ * Most Utah resorts open at 09:00; update individual entries as needed.
+ */
+const RESORT_OPEN_TIMES: Record<string, string> = {
+  "deer-valley": "09:00",
+  "park-city":   "09:00",
+  snowbird:      "09:00",
+  brighton:      "09:00",
+  solitude:      "09:00",
+};
+
 /** Add N minutes to a HH:MM string */
 function addMinutes(time: string, minutes: number): string {
   const [h, m] = time.split(":").map(Number);
@@ -87,16 +99,7 @@ export function buildMockPlan(
     ? req.windowStart.split("T")[0]
     : new Date().toISOString().split("T")[0];
 
-  const totalWindowMinutes = diffMinutes(departTime, mustReturnBy);
-  const nonSkiMinutes = driveOut * 2 + BUFFER * 2;
-  const skiMinutes = Math.max(0, totalWindowMinutes - nonSkiMinutes);
-
   const warnings: string[] = [];
-  if (skiMinutes < 60) {
-    warnings.push(
-      "Your time window leaves less than 1 hour on the mountain. Consider a later start or earlier return time."
-    );
-  }
 
   // ---- Build candidate lift list ----
   // Source: liftStatusMap from Liftie (real lift names + status) when available,
@@ -226,9 +229,37 @@ export function buildMockPlan(
   });
   cursor = bootsEnd;
 
+  // Clamp ski start to resort open time (09:00 for all Utah resorts).
+  const resortOpenTime = RESORT_OPEN_TIMES[resortKey] ?? "09:00";
+  const waitMinutes = Math.max(0, diffMinutes(cursor, resortOpenTime));
+  if (waitMinutes > 0) {
+    const waitEnd = addMinutes(cursor, waitMinutes);
+    timeline.push({
+      type: "buffer",
+      label: `Wait for lifts to open (${resortOpenTime})`,
+      startTime: cursor,
+      endTime: waitEnd,
+      durationMinutes: waitMinutes,
+      isMock: true,
+    });
+    cursor = waitEnd;
+    warnings.push(
+      `You'll arrive at ${resortName} before lifts open at ${resortOpenTime}. ${waitMinutes} min wait at the mountain.`
+    );
+  }
+
   // Deadline to start heading back
   const driveBackStart = addMinutes(mustReturnBy, -(driveOut + BUFFER));
-  let minutesRemaining = diffMinutes(cursor, driveBackStart);
+  const skiMinutes = Math.max(0, diffMinutes(cursor, driveBackStart));
+  const skiStart = cursor;
+
+  if (skiMinutes < 60) {
+    warnings.push(
+      "Your time window leaves less than 1 hour on the mountain. Consider a later start or earlier return time."
+    );
+  }
+
+  let minutesRemaining = skiMinutes;
   let runIdx = 0;
   let totalRuns = 0;
   let totalVert = 0;
@@ -296,7 +327,7 @@ export function buildMockPlan(
   const hasLiveStatus = liftStatusMap != null;
   const summary =
     `Leave at ${departTime}, arrive ${resortName} around ${driveOutEnd}. ` +
-    `Ski from ${bootsEnd} to ${cursor} (${skiMinutes} min on mountain). ` +
+    `Ski from ${skiStart} to ${cursor} (${skiMinutes} min on mountain). ` +
     `${totalRuns} run${totalRuns !== 1 ? "s" : ""}, ~${totalVert.toLocaleString()} ft vertical. ` +
     `Back by ${driveBackEnd}.` +
     (hasLiveStatus ? " Lift status: live." : "");
