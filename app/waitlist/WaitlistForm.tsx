@@ -15,7 +15,7 @@ export function WaitlistForm() {
   if (state.status === "success") {
     return (
       <div className="flex flex-col items-center gap-3 py-4 text-center">
-        <CheckCircle2 className="h-10 w-10 text-blue-400" />
+        <CheckCircle2 className="h-10 w-10 text-sky-400" />
         <p className="text-white font-semibold text-lg">You&apos;re on the list!</p>
         <p className="text-white/70 text-sm">
           We&apos;ll reach out when cycling mode and other updates ship.
@@ -37,7 +37,7 @@ export function WaitlistForm() {
           placeholder="Your name"
           autoComplete="name"
           required
-          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-blue-400 focus:ring-blue-400"
+          className="bg-white/10 border-white/25 text-white placeholder:text-white/50 focus-visible:border-sky-400 focus-visible:ring-sky-400"
         />
       </div>
 
@@ -52,7 +52,7 @@ export function WaitlistForm() {
           placeholder="you@example.com"
           autoComplete="email"
           required
-          className="bg-white/10 border-white/20 text-white placeholder:text-white/40 focus:border-blue-400 focus:ring-blue-400"
+          className="bg-white/10 border-white/25 text-white placeholder:text-white/50 focus-visible:border-sky-400 focus-visible:ring-sky-400"
         />
       </div>
 

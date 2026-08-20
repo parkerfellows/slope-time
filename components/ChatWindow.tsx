@@ -56,7 +56,7 @@ export function ChatWindow() {
 
       setMessages((prev) => [...prev, { role: "model", content: json.reply }]);
     } catch {
-      setError("Network error — please check your connection and try again.");
+      setError("Network error. Check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
@@ -67,21 +67,23 @@ export function ChatWindow() {
       {/* Message list */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2 min-h-0">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-            <div className="space-y-1">
-              <MountainSnow className="h-8 w-8 text-primary mx-auto" />
-              <h2 className="font-semibold">Resort Conditions Chat</h2>
-              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-                Ask about Utah ski conditions — snow, weather, lift status, or
+          <div className="flex flex-col items-center justify-center h-full gap-6 text-center animate-fade-up">
+            <div className="space-y-2">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-accent">
+                <MountainSnow className="h-6 w-6 text-primary" />
+              </div>
+              <h2 className="font-bold tracking-tight text-lg">Resort Conditions Chat</h2>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+                Ask about Utah ski conditions: snow, weather, lift status, or
                 which resort to pick today.
               </p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 w-full max-w-md">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-md">
               {STARTER_PROMPTS.map((prompt) => (
                 <button
                   key={prompt}
                   onClick={() => sendMessage(prompt)}
-                  className="text-left text-sm border rounded-md px-3 py-1.5 hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+                  className="cursor-pointer text-left text-sm border rounded-lg px-3.5 py-2.5 hover:bg-accent hover:border-primary/30 transition-colors duration-200 text-muted-foreground hover:text-foreground"
                 >
                   {prompt}
                 </button>

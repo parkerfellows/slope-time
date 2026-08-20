@@ -2,10 +2,11 @@
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { MountainSnow } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { PlanForm } from "@/components/PlanForm";
 import { DayPlanResult } from "@/components/DayPlanResult";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 import type { PlanRequest, DayPlan, OptimizeErrorResponse } from "@/lib/schema/planRequest";
 import { RESORTS } from "@/lib/schema/planRequest";
 
@@ -50,37 +51,49 @@ function PlanPageInner() {
           ?.scrollIntoView({ behavior: "smooth" });
       }, 100);
     } catch {
-      setError("Network error — please check your connection and try again.");
+      setError("Network error. Check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <div className="flex-1 max-w-2xl mx-auto w-full px-4 py-8 space-y-10">
+    <div className="mx-auto w-full max-w-2xl flex-1 space-y-10 px-4 py-10 sm:px-6">
       {/* Form section */}
-      <section>
-        <h1 className="text-2xl font-bold mb-1">Plan your ski day</h1>
-        <p className="text-sm text-muted-foreground mb-6">
-          Fill in your time window and preferences — we&apos;ll handle the
-          rest.
+      <section className="animate-fade-up">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          Plan your ski day
+        </h1>
+        <p className="mb-6 mt-1.5 text-sm text-muted-foreground">
+          Fill in your time window and preferences. We handle the rest.
         </p>
-        <div className="rounded-lg border bg-card p-6">
-          <PlanForm onSubmit={handleSubmit} isLoading={isLoading} defaultResort={defaultResort} />
+        <div className="rounded-xl border bg-card p-6 shadow-sm sm:p-8">
+          <PlanForm
+            onSubmit={handleSubmit}
+            isLoading={isLoading}
+            defaultResort={defaultResort}
+          />
         </div>
       </section>
 
       {/* Error state */}
       {error && (
-        <div className="rounded-md bg-destructive/10 border border-destructive/30 px-4 py-3 text-destructive text-sm">
+        <div
+          role="alert"
+          className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+        >
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           {error}
         </div>
       )}
 
+      {/* Loading skeleton mirrors the results layout */}
+      {isLoading && <PlanSkeleton />}
+
       {/* Results section */}
       {plan && (
-        <section id="plan-results">
-          <h2 className="text-xl font-bold mb-4">Your day plan</h2>
+        <section id="plan-results" className="animate-fade-up scroll-mt-20">
+          <h2 className="mb-4 text-xl font-bold tracking-tight">Your day plan</h2>
           <DayPlanResult plan={plan} />
         </section>
       )}
@@ -88,23 +101,37 @@ function PlanPageInner() {
   );
 }
 
+function PlanSkeleton() {
+  return (
+    <div className="space-y-4" aria-hidden="true">
+      <div className="h-10 animate-pulse rounded-lg bg-muted" />
+      <div className="space-y-3 rounded-xl border bg-card p-5">
+        <div className="h-5 w-2/5 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-4/5 animate-pulse rounded bg-muted" />
+        <div className="grid grid-cols-3 gap-3 pt-2">
+          <div className="h-12 animate-pulse rounded-lg bg-muted" />
+          <div className="h-12 animate-pulse rounded-lg bg-muted" />
+          <div className="h-12 animate-pulse rounded-lg bg-muted" />
+        </div>
+      </div>
+      <div className="space-y-3 rounded-xl border bg-card p-5">
+        <div className="h-4 w-1/4 animate-pulse rounded bg-muted" />
+        <div className="h-10 animate-pulse rounded bg-muted" />
+        <div className="h-10 animate-pulse rounded bg-muted" />
+        <div className="h-10 animate-pulse rounded bg-muted" />
+      </div>
+    </div>
+  );
+}
+
 export default function PlanPage() {
   return (
-    <main className="min-h-screen flex flex-col">
-      {/* Nav */}
-      <nav className="border-b px-6 py-4 flex items-center gap-3">
-        <Link
-          href="/"
-          className="flex items-center gap-2 font-bold text-lg hover:text-primary transition-colors"
-        >
-          <MountainSnow className="h-5 w-5 text-primary" />
-          BestLine
-        </Link>
-      </nav>
-
+    <main className="flex min-h-[100dvh] flex-col">
+      <SiteHeader />
       <Suspense fallback={null}>
         <PlanPageInner />
       </Suspense>
+      <SiteFooter />
     </main>
   );
 }

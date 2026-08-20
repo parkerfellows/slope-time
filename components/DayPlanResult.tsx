@@ -15,7 +15,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import type { DayPlan, LiftStatus, TimelineEntry, WeatherSlice } from "@/lib/schema/planRequest";
-import { cn } from "@/lib/utils";
+import { cn, formatWindDir } from "@/lib/utils";
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   green: "bg-green-500",
@@ -73,7 +73,7 @@ function WeatherChip({ weather }: { weather: WeatherSlice }) {
         <span className="flex items-center gap-0.5">
           <Wind className="h-3 w-3" />
           {Math.round(weather.windMph)} mph
-          {weather.windDir ? ` ${weather.windDir}` : ""}
+          {weather.windDir ? ` ${formatWindDir(weather.windDir)}` : ""}
         </span>
       )}
       {weather.precipChance !== null && weather.precipChance > 0 && (
@@ -110,8 +110,8 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
       </div>
 
       {/* Times */}
-      <div className="w-20 shrink-0 text-xs text-muted-foreground pt-0.5">
-        {entry.startTime}–{entry.endTime}
+      <div className="w-20 shrink-0 text-xs text-muted-foreground pt-0.5 tabular-nums">
+        {entry.startTime}-{entry.endTime}
       </div>
 
       {/* Content */}
@@ -180,23 +180,23 @@ export function DayPlanResult({ plan }: { plan: DayPlan }) {
   return (
     <div className="space-y-6">
       {/* Data sources banner */}
-      <div className="rounded-md bg-amber-50 border border-amber-200 px-4 py-2 text-amber-800 text-xs flex items-center gap-2">
+      <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-2.5 text-amber-800 text-xs flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           {plan.isMock ? (
-            <><strong>Estimated plan</strong> — drive time, lift status, and weather are all estimated.</>
+            <><strong>Estimated plan.</strong> Drive time, lift status, and weather are all estimated.</>
           ) : (
-            <><strong>Live data</strong> where available. Lift timing &amp; vertical figures are still estimated — run geometry coming in a later phase.</>
+            <><strong>Live data</strong> where available. Lift timing &amp; vertical figures are still estimated; run geometry coming in a later phase.</>
           )}
         </span>
       </div>
 
       {/* Summary card */}
-      <div className="rounded-lg border bg-card p-4 space-y-3">
-        <h2 className="font-semibold text-base">{plan.resortName}</h2>
-        <p className="text-sm text-muted-foreground">{plan.summary}</p>
+      <div className="rounded-xl border bg-card p-5 space-y-3 shadow-sm">
+        <h2 className="font-bold text-lg tracking-tight">{plan.resortName}</h2>
+        <p className="text-sm text-muted-foreground leading-relaxed">{plan.summary}</p>
 
-        <div className="grid grid-cols-3 gap-3 pt-1">
+        <div className="grid grid-cols-3 divide-x divide-border rounded-lg bg-muted/50 py-3 mt-1">
           <Stat label="On mountain" value={`${plan.skiTimeMinutes} min`} />
           <Stat label="Runs" value={String(plan.totalRuns)} />
           <Stat
@@ -222,9 +222,9 @@ export function DayPlanResult({ plan }: { plan: DayPlan }) {
       )}
 
       {/* Timeline */}
-      <div className="rounded-lg border bg-card divide-y divide-border overflow-hidden">
+      <div className="rounded-xl border bg-card divide-y divide-border overflow-hidden shadow-sm">
         <div className="px-4 py-3 bg-muted/40">
-          <h3 className="font-medium text-sm">Timeline</h3>
+          <h3 className="font-semibold text-sm">Timeline</h3>
         </div>
 
         <div className="px-4">
@@ -245,8 +245,8 @@ export function DayPlanResult({ plan }: { plan: DayPlan }) {
                   <div className="w-8 flex justify-center shrink-0">
                     <MountainSnow className="h-5 w-5 text-sky-500" />
                   </div>
-                  <div className="w-20 shrink-0 text-xs text-muted-foreground">
-                    {mountainStart}–{mountainEnd}
+                  <div className="w-20 shrink-0 text-xs text-muted-foreground tabular-nums">
+                    {mountainStart}-{mountainEnd}
                   </div>
                   <div>
                     <span className="font-medium text-sm">
@@ -284,9 +284,9 @@ export function DayPlanResult({ plan }: { plan: DayPlan }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="text-center">
-      <div className="text-lg font-bold text-primary">{value}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+    <div className="text-center px-2">
+      <div className="text-lg font-bold text-primary tabular-nums">{value}</div>
+      <div className="text-xs text-muted-foreground mt-0.5">{label}</div>
     </div>
   );
 }

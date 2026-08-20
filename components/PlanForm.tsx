@@ -11,10 +11,10 @@ import {
   OPTIMIZATION_GOALS,
   TERRAIN_TYPES,
 } from "@/lib/schema/planRequest";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -232,16 +232,26 @@ export function PlanForm({ onSubmit, isLoading, defaultResort = "best-available"
       {/* Terrain preferences */}
       <div className="space-y-2">
         <Label>Terrain preferences</Label>
-        <div className="flex flex-wrap gap-4">
-          {TERRAIN_TYPES.map((t) => (
-            <label key={t} className="flex items-center gap-2 cursor-pointer">
-              <Checkbox
-                checked={terrainPrefs.includes(t)}
-                onCheckedChange={() => toggleTerrain(t)}
-              />
-              <span className="text-sm">{TERRAIN_LABELS[t]}</span>
-            </label>
-          ))}
+        <div className="flex flex-wrap gap-2">
+          {TERRAIN_TYPES.map((t) => {
+            const selected = terrainPrefs.includes(t);
+            return (
+              <button
+                key={t}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => toggleTerrain(t)}
+                className={cn(
+                  "cursor-pointer rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.97]",
+                  selected
+                    ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                    : "border-input bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                )}
+              >
+                {TERRAIN_LABELS[t]}
+              </button>
+            );
+          })}
         </div>
         {errors.terrainPreferences && (
           <p className="text-xs text-destructive">

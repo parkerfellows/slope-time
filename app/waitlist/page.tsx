@@ -1,80 +1,89 @@
-import Link from "next/link";
-import { MountainSnow, Bike, Zap, Map } from "lucide-react";
+import Image from "next/image";
+import { Bike, Zap, Map } from "lucide-react";
 import { WaitlistForm } from "./WaitlistForm";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 const HERO_IMAGE =
   "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?auto=format&fit=crop&w=1920&q=80";
 
+export const metadata = {
+  title: "BestLine · What's Next",
+  description:
+    "Cycling mode, live grooming data, and more resorts are on the way. Join the list to hear when they ship.",
+};
+
 export default function WaitlistPage() {
   return (
-    <main
-      className="min-h-screen flex flex-col relative"
-      style={{
-        backgroundImage: `url('${HERO_IMAGE}')`,
-        backgroundSize: "cover",
-        backgroundPosition: "center top",
-      }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/75 pointer-events-none" />
+    <main className="relative flex min-h-[100dvh] flex-col overflow-hidden">
+      <Image
+        src={HERO_IMAGE}
+        alt="Skier carving through fresh powder on a Utah mountain"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-top"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/60 to-slate-950/80" />
 
-      {/* Nav */}
-      <nav className="relative z-10 px-6 py-4 flex items-center justify-between">
-        <Link
-          href="/"
-          className="flex items-center gap-2 font-bold text-lg text-white hover:text-blue-400 transition-colors"
-        >
-          <MountainSnow className="h-5 w-5 text-blue-400" />
-          BestLine
-        </Link>
-      </nav>
+      <SiteHeader variant="overlay" />
 
       {/* Content */}
-      <section className="relative z-10 flex-1 flex flex-col items-center justify-center px-6 py-16 gap-10">
-        <div className="space-y-3 max-w-xl text-center">
-          <p className="text-blue-400 text-sm font-semibold tracking-widest uppercase">
+      <section className="relative z-10 flex flex-1 flex-col items-center justify-center gap-10 px-6 py-14">
+        <div
+          className="animate-fade-up max-w-xl space-y-4 text-center"
+          style={{ "--stagger": "0ms" } as React.CSSProperties}
+        >
+          <p className="text-sm font-semibold uppercase tracking-widest text-sky-400">
             Coming soon
           </p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-            More modes. <span className="text-blue-400">Same precision.</span>
+          <h1 className="text-balance text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl">
+            More modes. <span className="text-sky-400">Same precision.</span>
           </h1>
-          <p className="text-white/75 text-base leading-relaxed">
-            Cycling mode, smarter resort selection, real-time grooming data, and
-            more. Leave your email and we&apos;ll let you know when each update ships.
+          <p className="text-balance leading-relaxed text-white/75">
+            Cycling mode, smarter resort selection, and real-time grooming data.
+            Leave your email and we&apos;ll tell you when each update ships.
           </p>
         </div>
 
         {/* Upcoming features */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl w-full">
+        <div
+          className="animate-fade-up grid w-full max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3"
+          style={{ "--stagger": "120ms" } as React.CSSProperties}
+        >
           <FeatureCard
-            icon={<Bike className="h-5 w-5 text-blue-400" />}
+            icon={<Bike className="h-5 w-5" />}
             title="Cycling mode"
             description="Time-constrained road routes built around your window and starting point."
           />
           <FeatureCard
-            icon={<Zap className="h-5 w-5 text-blue-400" />}
+            icon={<Zap className="h-5 w-5" />}
             title="Live grooming"
             description="Real grooming reports layered into your plan, not just lift status."
           />
           <FeatureCard
-            icon={<Map className="h-5 w-5 text-blue-400" />}
+            icon={<Map className="h-5 w-5" />}
             title="More resorts"
-            description="Expanding beyond Utah — Jackson Hole, Mammoth, Tahoe, and more."
+            description="Expanding beyond Utah: Jackson Hole, Mammoth, Tahoe, and more."
           />
         </div>
 
         {/* Form card */}
-        <div className="w-full max-w-sm rounded-xl border border-white/20 bg-white/10 backdrop-blur-md p-6 space-y-5">
+        <div
+          className="glass-panel animate-fade-up w-full max-w-sm space-y-5 p-6"
+          style={{ "--stagger": "240ms" } as React.CSSProperties}
+        >
           <div className="space-y-1">
-            <h2 className="text-white font-bold text-lg">Stay in the loop</h2>
-            <p className="text-white/60 text-sm">No spam. Just updates when things ship.</p>
+            <h2 className="text-lg font-bold text-white">Stay in the loop</h2>
+            <p className="text-sm text-white/60">
+              No spam. Just updates when things ship.
+            </p>
           </div>
           <WaitlistForm />
         </div>
       </section>
 
-      <footer className="relative z-10 px-6 py-4 text-center text-xs text-white/40">
-        BestLine — Utah ski optimizer &mdash; Phase 1 MVP
-      </footer>
+      <SiteFooter variant="overlay" />
     </main>
   );
 }
@@ -89,10 +98,12 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur-md p-4 space-y-2">
-      {icon}
-      <h3 className="font-semibold text-sm text-white">{title}</h3>
-      <p className="text-xs text-white/65 leading-relaxed">{description}</p>
+    <div className="glass-panel space-y-2.5 p-4 transition-colors duration-200 hover:bg-white/15">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300">
+        {icon}
+      </div>
+      <h3 className="text-sm font-semibold text-white">{title}</h3>
+      <p className="text-xs leading-relaxed text-white/65">{description}</p>
     </div>
   );
 }

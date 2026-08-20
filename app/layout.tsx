@@ -6,7 +6,7 @@ import "./globals.css";
 const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "BestLine — Optimize Your Ski Day",
+  title: "BestLine · Optimize Your Ski Day",
   description:
     "Plan the perfect ski day from driveway to driveway. Given your time window and location, BestLine builds the best possible mountain session.",
 };

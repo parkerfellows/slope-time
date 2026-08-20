@@ -1,6 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { MountainSnow, Clock, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 /**
  * Hero background — free Unsplash ski/powder photo.
@@ -11,84 +14,79 @@ const HERO_IMAGE =
 
 export default function Home() {
   return (
-    <main
-      className="min-h-screen flex flex-col relative"
-      style={{
-        backgroundImage: `url('${HERO_IMAGE}')`,
-        backgroundSize: "cover",
-        backgroundPosition: "center top",
-      }}
-    >
-      {/* Gradient overlay — dark at top & bottom, slightly lighter in the middle */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/35 to-black/70 pointer-events-none" />
+    <main className="relative flex min-h-[100dvh] flex-col overflow-hidden">
+      <Image
+        src={HERO_IMAGE}
+        alt="Skier carving through fresh powder on a Utah mountain"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-top"
+      />
+      {/* Scrim: dark at top and bottom, lighter in the middle */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/35 to-slate-950/75" />
 
-      {/* Nav */}
-      <nav className="relative z-10 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-2 font-bold text-lg text-white">
-          <MountainSnow className="h-5 w-5 text-blue-400" />
-          BestLine
-        </div>
-        <div className="flex items-center gap-2">
-          <Button asChild size="sm" variant="ghost" className="text-white hover:text-white hover:bg-white/10">
-            <Link href="/dashboard">Conditions</Link>
-          </Button>
-          <Button asChild size="sm" variant="ghost" className="text-white hover:text-white hover:bg-white/10">
-            <Link href="/chat">Chat</Link>
-          </Button>
-          <Button asChild size="sm" variant="ghost" className="text-white hover:text-white hover:bg-white/10">
-            <Link href="/waitlist">What&apos;s next</Link>
-          </Button>
-          <Button asChild size="sm">
-            <Link href="/plan">Plan my day</Link>
-          </Button>
-        </div>
-      </nav>
+      <SiteHeader variant="overlay" />
 
       {/* Hero */}
-      <section className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-20 gap-8">
-        <div className="space-y-4 max-w-2xl">
-          <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight leading-tight text-white drop-shadow-lg">
+      <section className="relative z-10 flex flex-1 flex-col items-center justify-center gap-10 px-6 py-16 text-center">
+        <div className="max-w-2xl space-y-5">
+          <h1
+            className="animate-fade-up text-balance text-4xl font-extrabold leading-[1.05] tracking-tight text-white drop-shadow-lg sm:text-5xl lg:text-6xl"
+            style={{ "--stagger": "0ms" } as React.CSSProperties}
+          >
             Driveway to driveway,{" "}
-            <span className="text-blue-400">optimized.</span>
+            <span className="text-sky-400">optimized.</span>
           </h1>
-          <p className="text-lg text-white/80 drop-shadow">
-            Tell BestLine when you&apos;re free and where you&apos;re starting
-            from. We&apos;ll build the best possible ski session that fits your
-            window — accounting for drive time, lift lines, and your terrain
-            preferences.
+          <p
+            className="animate-fade-up mx-auto max-w-xl text-balance text-lg leading-relaxed text-white/80 drop-shadow"
+            style={{ "--stagger": "100ms" } as React.CSSProperties}
+          >
+            Tell us when you&apos;re free and where you start. We build the best
+            ski day that fits your window.
           </p>
         </div>
 
-        <Button asChild size="lg" className="gap-2 text-base px-8 py-6 shadow-lg">
-          <Link href="/plan">
-            Plan my ski day
-            <ChevronRight className="h-5 w-5" />
-          </Link>
-        </Button>
+        <div
+          className="animate-fade-up"
+          style={{ "--stagger": "200ms" } as React.CSSProperties}
+        >
+          <Button
+            asChild
+            size="lg"
+            className="gap-2 px-8 py-6 text-base shadow-xl shadow-sky-950/40"
+          >
+            <Link href="/plan">
+              Plan my ski day
+              <ChevronRight className="h-5 w-5" />
+            </Link>
+          </Button>
+        </div>
 
         {/* Feature highlights */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl w-full mt-8">
+        <div
+          className="animate-fade-up mt-6 grid w-full max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3"
+          style={{ "--stagger": "300ms" } as React.CSSProperties}
+        >
           <FeatureCard
-            icon={<Clock className="h-6 w-6 text-blue-400" />}
+            icon={<Clock className="h-5 w-5" />}
             title="Time-constrained"
-            description="Enter your window and we handle the math — drive time, parking, gear up, and back."
+            description="Enter your window. We handle drive time, parking, gear up, and the trip back."
           />
           <FeatureCard
-            icon={<MountainSnow className="h-6 w-6 text-blue-400" />}
+            icon={<MountainSnow className="h-5 w-5" />}
             title="Utah resorts"
             description="Deer Valley, Park City, Snowbird, Brighton, Solitude. More coming soon."
           />
           <FeatureCard
-            icon={<MapPin className="h-6 w-6 text-blue-400" />}
+            icon={<MapPin className="h-5 w-5" />}
             title="Your starting point"
-            description="Start anywhere. We calculate drive time and leave the right amount for skiing."
+            description="Start anywhere. We calculate the drive and leave the right amount for skiing."
           />
         </div>
       </section>
 
-      <footer className="relative z-10 px-6 py-4 text-center text-xs text-white/40">
-        BestLine — Utah ski optimizer &mdash; Phase 1 MVP
-      </footer>
+      <SiteFooter variant="overlay" />
     </main>
   );
 }
@@ -103,10 +101,12 @@ function FeatureCard({
   description: string;
 }) {
   return (
-    <div className="rounded-lg border border-white/20 bg-white/10 backdrop-blur-md p-5 text-left space-y-2">
-      {icon}
-      <h3 className="font-semibold text-sm text-white">{title}</h3>
-      <p className="text-xs text-white/70 leading-relaxed">{description}</p>
+    <div className="glass-panel space-y-2.5 p-5 text-left transition-colors duration-200 hover:bg-white/15">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sky-400/15 text-sky-300">
+        {icon}
+      </div>
+      <h3 className="text-sm font-semibold text-white">{title}</h3>
+      <p className="text-xs leading-relaxed text-white/70">{description}</p>
     </div>
   );
 }
