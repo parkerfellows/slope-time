@@ -127,7 +127,7 @@ export function buildMockPlan(
   if (liftStatusMap && Object.keys(liftStatusMap).length > 0) {
     // Real data path: use Liftie's lift list; enrich with metrics from our config.
     candidates = Object.entries(liftStatusMap).map(([name, status]) => {
-      const { liftName: _, ...metric } = getOrDefaultMetric(name, resortKey, lookup);
+      const { liftName: _liftName, ...metric } = getOrDefaultMetric(name, resortKey, lookup);
       return { liftName: name, status, ...metric };
     });
     // Warn if Liftie is showing mostly closed

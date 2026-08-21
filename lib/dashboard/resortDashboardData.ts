@@ -4,11 +4,10 @@
  * Returns structured, display-ready data — no string formatting here.
  */
 
-import { fetchHourlyWeather } from "@/lib/weather/googleWeather";
+import { fetchHourlyWeather, type WeatherByHour } from "@/lib/weather/googleWeather";
 import { fetchLiftStatus } from "@/lib/resorts/liftStatus";
 import { RESORT_COORDINATES } from "@/lib/resorts/resortCoordinates";
 import { LIFTIE_RESORT_IDS } from "@/lib/resorts/liftieIds";
-import { fetchOnTheSnowData } from "@/lib/resorts/onTheSnow";
 
 export interface ResortWeather {
   tempF: number | null;
@@ -36,11 +35,10 @@ export interface ResortLifts {
 }
 
 export interface ResortSnow {
-  baseDepthIn: number | null;
-  snowLast3Days: number | null;
-  snowNext3Days: number | null;
-  openTrails: number | null;
-  totalTrails: number | null;
+  /** Snowfall accumulation for the current hour (inches) */
+  snowThisHour: number | null;
+  /** Total forecast snowfall over the next 24 hours (inches) */
+  snowNext24h: number | null;
 }
 
 export interface ResortDashboardItem {
@@ -68,17 +66,37 @@ const SLC_DRIVE_MINUTES: Record<string, number> = {
   solitude: 42,
 };
 
+/** Derive snow stats from the hourly weather forecast map. */
+function deriveSnowFromWeather(weatherMap: WeatherByHour): ResortSnow {
+  const sorted = Array.from(weatherMap.keys()).sort();
+  const snowThisHour = sorted[0]
+    ? (weatherMap.get(sorted[0])?.snowInches ?? null)
+    : null;
+
+  const allSnow = sorted
+    .map((k) => weatherMap.get(k)?.snowInches ?? null)
+    .filter((v): v is number => v !== null && v > 0);
+
+  const snowNext24h =
+    allSnow.length > 0
+      ? parseFloat(allSnow.reduce((a, b) => a + b, 0).toFixed(1))
+      : null;
+
+  return { snowThisHour, snowNext24h };
+}
+
 export async function fetchDashboardData(): Promise<{
   resorts: ResortDashboardItem[];
   fetchedAt: string;
 }> {
   const resortKeys = Object.keys(RESORT_COORDINATES);
 
-  const [weatherResults, liftResults, snowMap] = await Promise.all([
+  const [weatherResults, liftResults] = await Promise.all([
     Promise.all(
       resortKeys.map(async (key) => {
         const coords = RESORT_COORDINATES[key];
-        const weather = await fetchHourlyWeather(coords.lat, coords.lng, 8);
+        // Fetch 24 hours so we can sum a full day's snow forecast.
+        const weather = await fetchHourlyWeather(coords.lat, coords.lng, 24);
         return { key, weather };
       })
     ),
@@ -90,7 +108,6 @@ export async function fetchDashboardData(): Promise<{
         return { key, lifts };
       })
     ),
-    fetchOnTheSnowData(),
   ]);
 
   const resorts: ResortDashboardItem[] = resortKeys.map((key) => {
@@ -98,7 +115,6 @@ export async function fetchDashboardData(): Promise<{
       weatherResults.find((r) => r.key === key)!;
     const { lifts: liftMap } =
       liftResults.find((r) => r.key === key)!;
-    const onTheSnow = snowMap.get(key) ?? null;
 
     // ── Weather ──────────────────────────────────────────────────────────────
     let weather: ResortWeather | null = null;
@@ -145,15 +161,9 @@ export async function fetchDashboardData(): Promise<{
       };
     }
 
-    // ── Snow (OnTheSnow) ──────────────────────────────────────────────────────
-    const snow: ResortSnow | null = onTheSnow
-      ? {
-          baseDepthIn: onTheSnow.baseDepthIn,
-          snowLast3Days: onTheSnow.snowLast3Days,
-          snowNext3Days: onTheSnow.snowNext3Days,
-          openTrails: onTheSnow.openTrails,
-          totalTrails: onTheSnow.totalTrails,
-        }
+    // ── Snow (derived from Google Weather forecast) ───────────────────────────
+    const snow: ResortSnow | null = weatherMap
+      ? deriveSnowFromWeather(weatherMap)
       : null;
 
     return {
